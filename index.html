@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="description" content="Free Web tutorials">
+	<meta name="keywords" content="HTML,CSS,XML,JavaScript">
+	<meta name="author" content="John Doe">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<title>Page Title</title>
+</head>
+<body>
+	<script>
+		var user_id; 
+		var user_first_name;
+		var user_last_name;
+		var user_full_name;
+		var user_email;
+		var user_cover;
+		var user_photo;
+
+		var facebook_access_token;
+
+		window.fbAsyncInit = function() {
+			FB.init({
+				appId      : '1277872625624330',
+				xfbml      : true,
+				version    : 'v2.8'
+			});
+			//FB.AppEvents.logPageView();
+			FB.getLoginStatus(function(response) {
+			    document.getElementById('status').innerHTML = response;
+			    if(response.status === 'connected'){
+			    	document.getElementById('status').innerHTML = "Connected To Facebook";
+			    	facebook_access_token = response.authResponse.accessToken;
+			    	getUserInfo(response.authResponse.userID);
+			    	//document.getElementById('user_info').innerHTML = response.authResponse.userID;
+			    }else if(response.status === 'not_authorized'){
+			    	document.getElementById('status').innerHTML = "Logged Into Facebook But Not In App";
+			    }else if(response.status === 'unknown'){
+			    	document.getElementById('status').innerHTML = "Not Logged Into Facebook";
+			    }else{
+			    	document.getElementById('status').innerHTML = "Error";
+			    }
+			});
+		};
+
+		(function(d, s, id){
+			var js, fjs = d.getElementsByTagName(s)[0];
+			if (d.getElementById(id)) {return;}
+			js = d.createElement(s); js.id = id;
+			js.src = "//connect.facebook.net/en_US/sdk.js";
+			fjs.parentNode.insertBefore(js, fjs);
+		}(document, 'script', 'facebook-jssdk'));
+	
+		//document.getElementById("facebook_button_group").style.visibility = 'hidden'; 	
+
+		function login(){
+			FB.login(function(response){
+				if(response.status === 'connected'){
+			    	document.getElementById('status').innerHTML = "Connected To Facebook<br>";
+			    	facebook_access_token = response.authResponse.accessToken;
+			    	getUserInfo(response.authResponse.userID);
+			    	//document.getElementById('user_info').innerHTML = response.userID;
+			    }else if(response.status === 'not_authorized'){
+			    	document.getElementById('status').innerHTML = "Connected To Facebook<br>";
+			    }else if(response.status === 'unknown'){
+			    	document.getElementById('status').innerHTML = "Not Logged Into Facebook";
+			    }else{
+			    	document.getElementById('status').innerHTML = "Error : "+response.status;
+		    	}
+			},{scope: 'public_actions'});
+		}
+
+		function getUserInfo(userId){
+
+		    document.getElementById("login_buttton_facebook").style.visibility = 'hidden'; 
+		    //document.getElementById("facebook_button_group").style.visibility = 'show'; 
+			FB.api('/'+userId, 'GET', {fields : 'name,id,gender,email,cover,about,picture'},function(response) {
+				if (!response || response.error) {
+					alert('Error occured\nError Type : '+response.error.type+'\nError Message : '+response.error.message);
+					console.log(response.error);
+				} else {
+					console.log(response);
+					user_full_name = response.name;
+					user_id = userId;
+					user_email = response.email;
+					user_photo = response.picture.data.url;
+					user_cover = response.cover.source;
+					var user_photo_html = '<img src="'+user_photo+'" alt="User Photo"/>';
+					var content = '<h2>'+user_photo_html+user_full_name+'</h2>';
+					content += '<h5>'+user_full_name+'</h5>';
+					content += '<img src="'+user_cover+'" alt="User Cover" class="user_cover_facebook"/>';
+					document.getElementById('user_info').innerHTML = content;
+					console.log(response);
+				}
+			});
+		}
+
+		function addFaceBookPost(){
+			var body = 'Reading JS SDK documentation';
+			FB.api('/me/feed', 'post', { message: body }, function(response) {
+				if (!response || response.error) {
+					alert('Error occured\nError Type : '+response.error.type+'\nError Message : '+response.error.message);
+					console.log(response.error);
+				} else {
+					alert('Post ID: ' + response.id);
+				}
+			});
+		}
+
+		function deleteFaceBookPost(){
+			var postId = '1234567890';
+			FB.api(postId, 'delete', function(response) {
+				if (!response || response.error) {
+			   		alert('Error occured');
+					console.log(response.error);
+				} else {
+			    	alert('Post was deleted');
+			  	}
+			});		
+		}
+
+	</script>
+
+	<div class="container-fluid"> 
+		<h1>Facebook API</h1>
+		<div id="status"></div>
+		<div id="user_info"></div>
+		<button onclick="login()" id="login_buttton_facebook" class="btn btn-primary"><i class="fa fa-facebook" aria-hidden="true"></i>FACEBOOK</button>
+		<hr>
+		<div id="facebook_button_group">
+			<button onclick="addFaceBookPost()" id="post_buttton_facebook"  class="btn btn-success">Add Post</button>
+			<button onclick="deleteFaceBookPost()" id="delete_buttton_facebook" class="btn btn-danger">Delete Post</button>	
+		</div>
+	</div>
+	<script
+	src="https://code.jquery.com/jquery-3.2.1.min.js"
+	integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+	crossorigin="anonymous"></script>
+	<script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</body>
+</html>
